@@ -12,7 +12,7 @@ namespace webshop.Controllers
         public shopDbContext _context = new();
 
         [HttpPost("addOsystem")]
-        public object AddNewOsystem([FromBody] AddNewOsystemDto addNewOsystemDto)
+        public object AddNewOsystem([FromBody] AddNewOsystemDTO addNewOsystemDto)
         {
             var osystem = new Osystem
             {
@@ -33,6 +33,55 @@ namespace webshop.Controllers
             }
 
             return StatusCode(400, new { message = "Sikertelen felvétel", result = osystem });
+        }
+
+        [HttpGet("allOsystem")]
+        public object GetAllOsysem()
+        {
+            var osystems = _context.Osystems.ToList();
+            Exception e = new();
+
+            if (osystems.Count > 0)
+            {
+                return StatusCode(200, new { message = "Sikeres lekérdezés", result = osystems });
+            }
+            else if (osystems.Count < 1)
+            {
+                return StatusCode(200, new { message = "Üres tábla", result = osystems });
+            }
+            else
+            {
+                return StatusCode(400, new { message = "Hiba a lekérdezésben", result = e.Message });
+            }
+
+
+        }
+
+        [HttpPost("updateOsystem")]
+        public object UpdateOsystem([FromQuery] Guid id, [FromBody] UpdateOsystemDto updateOsystemDto)
+        {
+            var osystem = _context.Osystems.FirstOrDefault(os => os.Id == id);
+            Exception e = new();
+
+
+            if (osystem != null)
+            {
+                osystem.Name = updateOsystemDto.Name;
+                osystem.Version = updateOsystemDto.Version;
+                osystem.UpdateTime = DateTime.Now;
+
+                _context.Osystems.Update(osystem);
+
+                return StatusCode(200, new { message = "Sikeres frissítés", result = osystem });
+            }
+            else if (osystem == null)
+            {
+                return StatusCode(404, new { message = "Nincs ilyen Id-vel osystem", result = osystem });
+            }
+            else
+            {
+                return StatusCode(400, new { message = "Hiba a frissítésben", result = e.Message });
+            }
         }
     }
 }
