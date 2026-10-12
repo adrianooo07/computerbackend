@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using webshop.Models;
+using webshop.Models.DTOs;
 
 namespace webshop.Controllers
 {
@@ -10,20 +11,28 @@ namespace webshop.Controllers
     {
         public shopDbContext _context = new();
 
-        [HttpPost("addNewOsystem")]
-        public object AddNewOsystem([FromBody] AddNewOsystemDTO newOsystem)
+        [HttpPost("addOsystem")]
+        public object AddNewOsystem([FromBody] AddNewOsystemDto addNewOsystemDto)
         {
             var osystem = new Osystem
             {
                 Id = Guid.NewGuid(),
-                Name = newOsystem.Name,
-                Version = newOsystem.Version,
+                Name = addNewOsystemDto.Name,
+                Version = addNewOsystemDto.Version,
                 RegisterTime = DateTime.Now,
-                Updatetime = DateTime.Now
+                UpdateTime = DateTime.Now,
             };
-            _context.Osystems.Add(osystem);
-            _context.SaveChanges();
-            return Ok(new { message = "New OS system added successfully." });
+
+
+            if (osystem != null)
+            {
+                _context.Osystems.Add(osystem);
+                _context.SaveChanges();
+
+                return StatusCode(201, new { message = "Sikeres felvétel", result = osystem });
+            }
+
+            return StatusCode(400, new { message = "Sikertelen felvétel", result = osystem });
         }
     }
 }
